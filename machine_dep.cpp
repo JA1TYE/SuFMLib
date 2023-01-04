@@ -27,11 +27,11 @@ namespace su_synth{
 
         if (ret != ESP_OK) {
             if (ret == ESP_FAIL) {
-                FM_DEBUG_ERROR(TAG, "Failed to mount or format filesystem");
+                FM_DEBUG_ERROR("FS", "Failed to mount or format filesystem");
             } else if (ret == ESP_ERR_NOT_FOUND) {
-                FM_DEBUG_ERROR(TAG, "Failed to find SPIFFS partition");
+                FM_DEBUG_ERROR("FS", "Failed to find SPIFFS partition");
             } else {
-                FM_DEBUG_ERROR(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
+                FM_DEBUG_ERROR("FS", "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
             }
             return;
         }
@@ -39,9 +39,9 @@ namespace su_synth{
         size_t total = 0, used = 0;
         ret = esp_spiffs_info(NULL, &total, &used);
         if (ret != ESP_OK) {
-            FM_DEBUG_ERROR(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
+            FM_DEBUG_ERROR("FS", "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
         } else {
-            FM_DEBUG_INFO(TAG, "Partition size: total: %d, used: %d", total, used);
+            FM_DEBUG_INFO("FS", "Partition size: total: %d, used: %d", total, used);
         }
     }
 
