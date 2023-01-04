@@ -1,0 +1,11 @@
+#ifndef _SYNTH_CONFIG_H_
+#define _SYNTH_CONFIG_H_
+
+#define SYNTH_FSAMPLE 47999.992f
+#define DECIMATION_RATE 48
+#define NUM_OPERATOR 4 
+#define MAX_TONES 6
+#define MAX_CHANNELS 16
+#define MAX_TIMBRE_PROGRAMS 256
+#define MIDI_UART_SOURCE UART_NUM_1
+#endif
