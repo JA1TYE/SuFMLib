@@ -1,7 +1,6 @@
 //Machine Dependent Constants & Functions
 //If you port this library to another platform, please modify this file, "machine_dep.h" and "synth_config.h"
 
-#include "esp_spiffs.h"
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "timbre_manager.h"
