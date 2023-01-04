@@ -11,10 +11,6 @@
 namespace su_synth{
 
 /*---Timbre Manager---*/
-    //Constants
-    const char fs_base_path = "/spiffs"; //Base path of configuration files
-    const char program_file_path = "/spiffs/program.bin"; //Path for program data
-
     //Initialize filesystem
     void timbre_manager::fs_init(void){
         esp_vfs_spiffs_conf_t fs_config;
@@ -52,3 +48,4 @@ namespace su_synth{
         }
         esp_vfs_spiffs_unregister(NULL);
     }
+}

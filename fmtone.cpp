@@ -121,7 +121,6 @@ namespace su_synth{
 
     std::int16_t fm_tone::calc(void){
         std::int32_t ret = 0;
-        std::int32_t tmp;
         std::int32_t lfo_pitch;
         std::uint16_t lfo_amp;
         //Process Low-Frequency(EG/LFO etc.) Update
