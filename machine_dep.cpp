@@ -1,14 +1,12 @@
 //Machine Dependent Constants & Functions
-//If you port this library to another platform, please modify this file and "synth_config.h"
+//If you port this library to another platform, please modify this file, "machine_dep.h" and "synth_config.h"
 
 #include "esp_spiffs.h"
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "timbre_manager.h"
+#include "machine_dep.h"
 
-/*---Debug Print Utilities---*/
-#define FM_DEBUG_INFO( tag, format, ... ) ESP_LOGI(tag,format __VA_OPT__(,) __VA_ARGS__)
-#define FM_DEBUG_ERROR( tag, format, ... ) ESP_LOGE(tag,format __VA_OPT__(,) __VA_ARGS__)
 
 namespace su_synth{
 
