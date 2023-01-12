@@ -108,10 +108,19 @@ namespace su_synth{
 
     typedef std::uint8_t save_param_t[BYTES_PER_SAVE_PARAM];
 
-    constexpr std::uint32_t get_out_scale(std::uint32_t in){
+    constexpr std::uint8_t count_bit_width(std::uint32_t in){
+        if(in == 0)return 1;
+        std::uint8_t width = 0;
+        while(in != 0){
+            width++;
+            in = in >> 1;
+        }
+        return width;
+    }
+
+    constexpr std::uint32_t calc_out_scale(std::uint32_t in){
         if(in == 0) return 0;
-        double width = std::log2((double)in);
-        std::uint8_t shift_amount = (std::uint8_t)(ceil(width));
+        std::uint8_t shift_amount = count_bit_width(in);
 
         std::uint32_t ret = 0;
         if(shift_amount < 32){
@@ -122,6 +131,10 @@ namespace su_synth{
     }
 
     const std::uint32_t DECIMATION_RATE = (int)((double)SYNTH_FSAMPLE / (double)SYNTH_EG_FREQ + 0.5);
-    constexpr std::uint32_t OUT_SCALE = get_out_scale(MAX_TONES);//TODO replace with value that is calculated from MAX_TONES
+#ifndef STATIC_GAIN
+    constexpr std::uint32_t OUT_SCALE = calc_out_scale(MAX_TONES);//TODO replace with value that is calculated from MAX_TONES
+#else
+    constexpr std::uint32_t OUT_SCALE = STATIC_GAIN;
+#endif
 }
 #endif
