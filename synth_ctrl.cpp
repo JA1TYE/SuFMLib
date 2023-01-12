@@ -18,7 +18,7 @@ namespace su_synth{
     control_value_t synth_controller::control_value[MAX_CHANNELS];
 
     void synth_controller::init(void){
-
+        printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",DECIMATION_RATE,OUT_SCALE);
         for(int i = 0;i < MAX_CHANNELS;i++){
             timbre_manager::get_timbre(0,&ch_save_param_[i]);
             timbre_manager::parse_timbre(&ch_save_param_[i],&ch_param_[i]);
@@ -312,8 +312,8 @@ namespace su_synth{
             sum_left += (tmp * control_value[ch].panning_left) / 0x8000;
             sum_right += (tmp * control_value[ch].panning_right) / 0x8000;
         }
-        sum_left = sum_left << 13;//for 5-8 tones
-        sum_right = sum_right << 13;//for 5-8 tones
+        sum_left = sum_left * OUT_SCALE;//OUT_SCALE is defined in synth_param.h
+        sum_right = sum_right * OUT_SCALE;
         buf[0] = sum_left;
         buf[1] = sum_right;
     }

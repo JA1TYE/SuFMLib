@@ -3,6 +3,7 @@
 #include "synth_config.h"
 #include <cstdint>
 #include <cstddef>
+#include <cmath>
 namespace su_synth{
 
     typedef enum{
@@ -106,5 +107,21 @@ namespace su_synth{
     const size_t       BYTES_OF_PROGRAM_NAME = 16;
 
     typedef std::uint8_t save_param_t[BYTES_PER_SAVE_PARAM];
+
+    constexpr std::uint32_t get_out_scale(std::uint32_t in){
+        if(in == 0) return 0;
+        double width = std::log2((double)in);
+        std::uint8_t shift_amount = (std::uint8_t)(ceil(width));
+
+        std::uint32_t ret = 0;
+        if(shift_amount < 32){
+            ret = 1 << (16 - shift_amount);
+        }
+        
+        return ret;
+    }
+
+    const std::uint32_t DECIMATION_RATE = (int)((double)SYNTH_FSAMPLE / (double)SYNTH_EG_FREQ + 0.5);
+    constexpr std::uint32_t OUT_SCALE = get_out_scale(MAX_TONES);//TODO replace with value that is calculated from MAX_TONES
 }
 #endif
