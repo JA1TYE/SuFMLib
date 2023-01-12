@@ -120,7 +120,7 @@ namespace su_synth{
 
     constexpr std::uint32_t calc_out_scale(std::uint32_t in){
         if(in == 0) return 0;
-        std::uint8_t shift_amount = count_bit_width(in);
+        std::uint8_t shift_amount = count_bit_width(in - 1);
 
         std::uint32_t ret = 0;
         if(shift_amount < 32){
