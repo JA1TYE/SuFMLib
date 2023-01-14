@@ -7,7 +7,7 @@
 #include "synth_param.h"
 
 namespace su_synth{
-    /*In this class we use a fixed-point number expression like this:
+    /*In this class, we use a fixed-point number expression like this:
     # for signed value
     - sign:1bit
     - integer:1bit
@@ -138,7 +138,7 @@ namespace su_synth{
                 op[i].update();
             }
         }
-        decimation_counter_ = (decimation_counter_ == (DECIMATION_RATE - 1))?0:decimation_counter_ + 1;
+        decimation_counter_ = (decimation_counter_ == (synth_controller::decimation_rate - 1))?0:decimation_counter_ + 1;
 
         //Calc Operators operations
         ret = algo_p_(this);

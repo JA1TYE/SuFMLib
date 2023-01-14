@@ -3,31 +3,14 @@
 #include "table.h"
 #include "synth_config.h"
 
-//Delta table should be calculated from sampling frequency defined in synth_config.h
+//DDS delta table
+//Normally, delta table will be calculated in constructor of synth_controller
+//If you define USE_STATIC_DELTA_TABLE, this lib will use pre-defined delta table
+//If you use pre-defined delta table,
+//You should prepare delta table by using tools/calc_delta.cpp
 #ifndef USE_STATIC_DELTA_TABLE
 std::uint32_t delta_table[128 + (NOTE_DEFAULT_OFFSET * 2)];
-
-//Calculate DDS delta value
-void calc_delta_table(double fsample){
-    std::int32_t lowest_note_num = -NOTE_DEFAULT_OFFSET;
-    std::int32_t highest_note_num = 127 + NOTE_DEFAULT_OFFSET;
-    const std::uint64_t OVERFLOW_VALUE = 0x100000000ULL;
-    double freq;
-    for(int i = lowest_note_num,idx = 0;i <= highest_note_num;i++,idx++){
-        //Frequency is calculated by midi tuning standard
-        freq = std::pow(2,(i-69)/12.0) * 440.0;
-        //Convert frequency to delta value
-        std::uint64_t delta = std::round(freq * OVERFLOW_VALUE / fsample);
-        //Boundary check
-        if(delta >= 0x100000000ULL){
-            delta = 0xFFFFFFFF;
-        }
-        delta_table[idx] = delta;
-    }
-}
-
-#else
-//offset 12,fmax ==
+#else USE_STATIC_DELTA_TABLE
 const std::uint32_t delta_table[128 + (NOTE_DEFAULT_OFFSET * 2)]={
     365779,387529,410573,434987,460853,488257,517290,548049,
     580638,615165,651744,690499,731558,775059,821146,869974,

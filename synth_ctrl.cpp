@@ -9,17 +9,11 @@
 
 namespace su_synth{
     const std::uint8_t ASSIGN_INVALID = 0xff;
-    fm_tone synth_controller::tg_[MAX_TONES];
-    assign_info_t synth_controller::assign_info_[MAX_TONES];
-    std::uint8_t synth_controller::lru_[MAX_TONES];
+    std::uint32_t synth_controller::decimation_rate = 48;
+    double synth_controller::sampling_freq = 48000;
 
-    synth_param_t synth_controller::ch_param_[MAX_CHANNELS];
-    save_param_t  synth_controller::ch_save_param_[MAX_CHANNELS];
-    control_value_t synth_controller::control_value[MAX_CHANNELS];
-
-    void synth_controller::init(void){
-        calc_delta_table(47999.992966651);
-        printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",DECIMATION_RATE,OUT_SCALE);
+    synth_controller::synth_controller(){
+        printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",decimation_rate,OUT_SCALE);
         for(int i = 0;i < MAX_CHANNELS;i++){
             timbre_manager::get_timbre(0,&ch_save_param_[i]);
             timbre_manager::parse_timbre(&ch_save_param_[i],&ch_param_[i]);
@@ -40,8 +34,31 @@ namespace su_synth{
             tg_[i].set_param(&ch_param_[0]);
             tg_[i].set_control(&control_value[0]);
         }
-
     }
+
+    //Calculate DDS delta value
+    void synth_controller::prepare_delta_table(double fsample){
+#ifndef USE_STATIC_DELTA_TABLE
+        std::int32_t lowest_note_num = -NOTE_DEFAULT_OFFSET;
+        std::int32_t highest_note_num = 127 + NOTE_DEFAULT_OFFSET;
+        const std::uint64_t OVERFLOW_VALUE = 0x100000000ULL;
+        double freq;
+        for(int i = lowest_note_num,idx = 0;i <= highest_note_num;i++,idx++){
+            //Frequency is calculated by midi tuning standard
+            freq = std::pow(2,(i-69)/12.0) * 440.0;
+            //Convert frequency to delta value
+            std::uint64_t delta = std::round(freq * OVERFLOW_VALUE / fsample);
+            //Boundary check
+            if(delta >= 0x100000000ULL){
+                delta = 0xFFFFFFFF;
+            }
+            delta_table[idx] = delta;
+        }
+ #endif               
+        sampling_freq = fsample;
+        decimation_rate = (int)((double)fsample / (double)SYNTH_EG_FREQ + 0.5);
+    }
+
 
     void synth_controller::reset(std::uint8_t ch){
         set_pitchbend(0,ch);

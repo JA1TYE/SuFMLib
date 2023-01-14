@@ -130,7 +130,6 @@ namespace su_synth{
         return ret;
     }
 
-    const std::uint32_t DECIMATION_RATE = (int)((double)SYNTH_FSAMPLE / (double)SYNTH_EG_FREQ + 0.5);
 #ifndef STATIC_GAIN
     constexpr std::uint32_t OUT_SCALE = calc_out_scale(MAX_TONES);//TODO replace with value that is calculated from MAX_TONES
 #else
