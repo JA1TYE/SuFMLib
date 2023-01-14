@@ -18,6 +18,7 @@ namespace su_synth{
     control_value_t synth_controller::control_value[MAX_CHANNELS];
 
     void synth_controller::init(void){
+        calc_delta_table(47999.992966651);
         printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",DECIMATION_RATE,OUT_SCALE);
         for(int i = 0;i < MAX_CHANNELS;i++){
             timbre_manager::get_timbre(0,&ch_save_param_[i]);
