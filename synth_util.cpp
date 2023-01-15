@@ -1,7 +1,8 @@
 #include <cstdint>
+
 #include "synth_util.h"
 #include "table.h"
-namespace su_synth{
+namespace su_synth::fm{
     std::uint16_t util::saturate(std::uint32_t in,std::uint16_t threshold){
         return (in >= threshold)?threshold:in;
     }

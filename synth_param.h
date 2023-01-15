@@ -1,10 +1,12 @@
 #ifndef _SYNTH_PARAM_H_
 #define _SYNTH_PARAM_H_
-#include "synth_config.h"
 #include <cstdint>
 #include <cstddef>
 #include <cmath>
-namespace su_synth{
+
+#include "synth_config.h"
+
+namespace su_synth::fm{
 
     typedef enum{
         ALGO_0 = 0,

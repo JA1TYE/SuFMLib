@@ -2,10 +2,12 @@
 #define _SYNTH_CTRL_H_
 
 #include<cstdint>
+
 #include "synth_param.h"
+#include "timbre_manager.h"
 #include "fmtone.h"
 
-namespace su_synth{
+namespace su_synth::fm{
     typedef struct{
         std::uint8_t note;
         std::uint8_t ch;
@@ -29,7 +31,9 @@ namespace su_synth{
     class synth_controller{
         private:
             //Instance of tone generators
-            su_synth::fm_tone tg_[MAX_TONES];
+            su_synth::fm::fm_tone tg_[MAX_TONES];
+            //Pointer to instance of timbre manager
+            su_synth::fm::timbre_manager *tm_;
             //Tone assignment related variable
             assign_info_t assign_info_[MAX_TONES];
             std::uint8_t lru_[MAX_TONES];
@@ -38,7 +42,7 @@ namespace su_synth{
             save_param_t     ch_save_param_[MAX_CHANNELS];
 
         public:
-            synth_controller();
+            synth_controller(timbre_manager *tm);
             //Class methods
             static std::uint32_t decimation_rate;
             static double sampling_freq;

@@ -2,8 +2,9 @@
 #define _TIMBRE_MANAGER_H_
 
 #include<cstdint>
+
 #include "synth_param.h"
-namespace su_synth{
+namespace su_synth::fm{
     
     //General upper bound value of NRPNs
     const std::uint8_t NRPN_GENERAL_MAX     = 99;
@@ -107,21 +108,21 @@ namespace su_synth{
 
     class timbre_manager{
         private:
-            static save_param_t* timbre_memory_;
-            static void load_all_timbre(void);
-            static void fs_init(void);
-            timbre_manager();
+            save_param_t* timbre_memory_;
         public:
-            static void init();
-            static void de_init();
+            timbre_manager();
+            ~timbre_manager();
+            void get_timbre(std::uint16_t num,save_param_t* dst);
+            void parse_timbre(save_param_t* src,synth_param_t* dst);
+            void modify_timbre(save_param_t *dst,std::uint16_t num,std::uint8_t value);
+            void export_timbre(std::uint16_t num,save_param_t *dst);
+            void import_timbre(std::uint16_t num,save_param_t *src);
             static void parse_RPN(synth_param_t* target,std::uint16_t num,std::uint8_t value);
             static void parse_NRPN(synth_param_t* target,std::uint16_t num,std::uint8_t value);
-            static void get_timbre(std::uint16_t num,save_param_t* dst);
-            static void parse_timbre(save_param_t* src,synth_param_t* dst);
-            static void modify_timbre(save_param_t *dst,std::uint16_t num,std::uint8_t value);
-            static void save_timbre(std::uint16_t num);
-            static void load_timbre(std::uint16_t num);
+            //Debug function
+            static void tone_dump(synth_param_t *param);
+            static void save_tone_dump(save_param_t* param);
+
     };
-    void tone_dump(synth_param_t *param);
 }
 #endif

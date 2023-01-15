@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace su_synth{
+namespace su_synth::fm{
     class util{
         private:
             util();

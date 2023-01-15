@@ -1,11 +1,12 @@
 #include <cstdint>
+#include <cstdio>
+
 #include "synth_util.h"
 #include "eg.h"
 #include "synth_param.h"
 #include "table.h"
-#include "stdio.h"
 
-namespace su_synth{
+namespace su_synth::fm{
     /*In this class we use a fixed-point number expression like this:
         # for signed value
         - sign:1bit

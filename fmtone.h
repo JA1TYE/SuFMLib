@@ -2,12 +2,13 @@
 #define _FMTONE_H_
 
 #include <cstdint>
+
 #include "op.h"
 #include "lfo.h"
 #include "synth_config.h"
 #include "synth_param.h"
 
-namespace su_synth{
+namespace su_synth::fm{
     class fm_tone{
         private:
             control_value_t* control_;

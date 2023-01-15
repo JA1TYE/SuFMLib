@@ -1,7 +1,4 @@
-#include<cstdint>
-#include<cmath>
 #include "table.h"
-#include "synth_config.h"
 
 //DDS delta table
 //Normally, delta table will be calculated in constructor of synth_controller
@@ -10,7 +7,7 @@
 //You should prepare delta table by using tools/calc_delta.cpp
 #ifndef USE_STATIC_DELTA_TABLE
 std::uint32_t delta_table[128 + (NOTE_DEFAULT_OFFSET * 2)];
-#else USE_STATIC_DELTA_TABLE
+#else
 const std::uint32_t delta_table[128 + (NOTE_DEFAULT_OFFSET * 2)]={
     365779,387529,410573,434987,460853,488257,517290,548049,
     580638,615165,651744,690499,731558,775059,821146,869974,

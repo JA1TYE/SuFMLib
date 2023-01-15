@@ -1,22 +1,24 @@
 #include<cstdint>
+#include <cstdio>
+
 #include "synth_config.h"
 #include "synth_param.h"
 #include "synth_ctrl.h"
 #include "timbre_manager.h"
 #include "fmtone.h"
 #include "table.h"
-#include <stdio.h>
 
-namespace su_synth{
+namespace su_synth::fm{
     const std::uint8_t ASSIGN_INVALID = 0xff;
     std::uint32_t synth_controller::decimation_rate = 48;
     double synth_controller::sampling_freq = 48000;
 
-    synth_controller::synth_controller(){
+    synth_controller::synth_controller(timbre_manager *tm){
+        tm_ = tm;
         printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",decimation_rate,OUT_SCALE);
         for(int i = 0;i < MAX_CHANNELS;i++){
-            timbre_manager::get_timbre(0,&ch_save_param_[i]);
-            timbre_manager::parse_timbre(&ch_save_param_[i],&ch_param_[i]);
+            tm_->get_timbre(0,&ch_save_param_[i]);
+            tm_->parse_timbre(&ch_save_param_[i],&ch_param_[i]);
             set_expression(127,i);
             set_volume(127,i);
             set_panpot(64,i);
@@ -135,8 +137,8 @@ namespace su_synth{
 
         //Only if PC is coming actual timbre is changed
         if(type == PROGRAM_CHANGE){
-            timbre_manager::get_timbre(tmp,&ch_save_param_[ch]);
-            timbre_manager::parse_timbre(&ch_save_param_[ch],&ch_param_[ch]);
+            tm_->get_timbre(tmp,&ch_save_param_[ch]);
+            tm_->parse_timbre(&ch_save_param_[ch],&ch_param_[ch]);
             for(int i = 0;i < MAX_TONES;i++){
                 if(assign_info_[i].ch == ch){
                     tg_[i].set_param(&ch_param_[ch]);
@@ -211,7 +213,7 @@ namespace su_synth{
             //Currently we don't use NRPN LSB
             if(is_MSB == true){
                 timbre_manager::parse_NRPN(&ch_param_[ch],control_value[ch].NRPN_value,value);
-                timbre_manager::modify_timbre(&ch_save_param_[ch],control_value[ch].NRPN_value,value);
+                tm_->modify_timbre(&ch_save_param_[ch],control_value[ch].NRPN_value,value);
             }
         }
         else{

@@ -2,8 +2,9 @@
 #define _OSC_H_
 
 #include <cstdint>
+
 #include "synth_param.h"
-namespace su_synth{
+namespace su_synth::fm{
     class oscillator{
         private:
             std::uint32_t acc_;

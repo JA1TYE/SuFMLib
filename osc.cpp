@@ -1,12 +1,13 @@
+#include <cstdlib>
+#include <cmath>
+#include <cstdio>
+
 #include "osc.h"
 #include "table.h"
 #include "synth_config.h"
 #include "synth_param.h"
-#include <cstdlib>
-#include <math.h>
-#include <stdio.h>
 
-namespace su_synth{
+namespace su_synth::fm{
     void oscillator::set_param(op_param_t* p){
         param_ = p;
     }

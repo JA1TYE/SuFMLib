@@ -1,11 +1,13 @@
-#include "stdio.h"
+#include <cstdlib>
+#include <cmath>
+#include <cstdio>
+
 #include "lfo.h"
 #include "synth_config.h"
 #include "synth_param.h"
 #include "synth_ctrl.h"
-#include <cstdlib>
-#include <math.h>
-namespace su_synth{
+
+namespace su_synth::fm{
     lfo::lfo(){
         acc_ = 0;
         noise_shift_ = 1;

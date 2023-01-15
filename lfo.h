@@ -2,9 +2,10 @@
 #define _LFO_H_
 
 #include <cstdint>
+
 #include "synth_param.h"
 
-namespace su_synth{
+namespace su_synth::fm{
     class lfo{
         private:
             typedef enum{

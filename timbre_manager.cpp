@@ -1,26 +1,71 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-//#include <sys/unistd.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <sys/stat.h>
+
 #include "synth_param.h"
 #include "synth_config.h"
 #include "timbre_manager.h"
 #include "table.h"
-#include "machine_dep.h"
 
-static const char *TAG = "FS";
+namespace su_synth::fm{
 
-namespace su_synth{
-    save_param_t* timbre_manager::timbre_memory_;
-    void save_tone_dump(save_param_t* param);
-    void timbre_manager::init(){
+    //Constructor
+    timbre_manager::timbre_manager(){
         timbre_memory_ = (save_param_t*)malloc(sizeof(save_param_t) * MAX_TIMBRE_PROGRAMS);
         if(timbre_memory_ == NULL)printf("err on timbre manager\n");
-        fs_init();
-        load_all_timbre();
     }
 
+    //Destructor
+    timbre_manager::~timbre_manager(){
+        if(timbre_memory_ != NULL){
+            free(timbre_memory_);
+        }
+    }
+
+    //Export timbre parameter from timbre_manager
+    //export_timbre is get_timbre with boundary check
+    void timbre_manager::export_timbre(std::uint16_t num,save_param_t *dst){
+        if(num >= MAX_TIMBRE_PROGRAMS){
+            return;
+        }
+        get_timbre(num,dst);
+    }
+
+    //Import timbre parameter to timbre_manager 
+    void timbre_manager::import_timbre(std::uint16_t num,save_param_t *src){
+        if(num >= MAX_TIMBRE_PROGRAMS){
+            return;
+        }
+        memcpy(&(timbre_memory_[num]),src,sizeof(save_param_t));
+    }
+
+    void timbre_manager::modify_timbre(save_param_t *dst,std::uint16_t num,std::uint8_t value){
+        //Currently we only use NRPN #0-#127
+        if(num < (sizeof(nrpn_to_save_param_offset)/sizeof(*nrpn_to_save_param_offset))){
+            int ofs = nrpn_to_save_param_offset[num];
+            if(ofs > -1){
+                (*dst)[ofs] = value;
+            }
+        }
+    }
+
+    void timbre_manager::get_timbre(std::uint16_t num,save_param_t* dst){
+        if(num >= MAX_TIMBRE_PROGRAMS)num = MAX_TIMBRE_PROGRAMS - 1;
+        memcpy(dst,timbre_memory_[num],sizeof(*timbre_memory_));
+    }
+
+    void timbre_manager::parse_timbre(save_param_t* src,synth_param_t* dst){
+        //Program Name
+        memcpy(&(dst->program_name),(void*)src,BYTES_OF_PROGRAM_NAME);
+        dst->program_name[16] = '\0';//Terminate Program name
+        //NRPN parameters
+        for(int i = 0;i < SAVE_PARAM_NUM - 1;i++){
+            parse_NRPN(dst,save_param_offset_to_nrpn[i + 1],(*src)[BYTES_OF_PROGRAM_NAME+i]);
+        }
+    }
+
+    /*--- Static member functions ---*/
     void timbre_manager::parse_RPN(synth_param_t* target,std::uint16_t num,std::uint8_t value){
         //General Parameters(as same as NRPN)
         if(num == NRPN_PITCHBEND_SENS){
@@ -192,23 +237,7 @@ namespace su_synth{
         }
     }
 
-    void timbre_manager::load_all_timbre(void){
-        FILE* f = fopen(program_file_path,"r");
-        if (f == NULL) {
-            FM_DEBUG_ERROR(TAG, "Failed to open program.bin");
-            return;
-        }
-
-        std::uint8_t buf [256];
-        for(int i = 0;i < MAX_TIMBRE_PROGRAMS;i++){
-            fread(buf,1,BYTES_PER_SAVE_PARAM,f);
-            memcpy(&(timbre_memory_[i]),buf,BYTES_PER_SAVE_PARAM);
-        }
-        FM_DEBUG_INFO(TAG,"Load done!");
-        fclose(f);
-    }
-
-    void tone_dump(synth_param_t *param){
+    void timbre_manager::tone_dump(synth_param_t *param){
         //Program name
         printf("--Name:%s--\n",param->program_name);
         //Common parameter
@@ -259,7 +288,7 @@ namespace su_synth{
         }
     }
 
-    void save_tone_dump(save_param_t* param){
+    void timbre_manager::save_tone_dump(save_param_t* param){
         //Program name
         char buf[17];
         memcpy(buf,*param,16);
@@ -300,68 +329,4 @@ namespace su_synth{
             printf("\n");
         }
     }
-
-    void timbre_manager::save_timbre(std::uint16_t num){
-        if(num >= MAX_TIMBRE_PROGRAMS){
-            return;
-        }
-        
-        FILE* f = fopen(program_file_path,"r+");
-        if (f == NULL) {
-            FM_DEBUG_ERROR(TAG, "Failed to open program.bin");
-            return;
-        }
-
-        size_t ofs = num * BYTES_PER_SAVE_PARAM;
-        fseek(f,ofs,SEEK_SET);
-        fwrite(&(timbre_memory_[num]),1,BYTES_PER_SAVE_PARAM,f);
-        FM_DEBUG_INFO(TAG,"Save done!");
-        fclose(f);
-    }
-
-    void timbre_manager::load_timbre(std::uint16_t num){
-        if(num >= MAX_TIMBRE_PROGRAMS){
-            return;
-        }
-
-        FILE* f = fopen(program_file_path,"r");
-        if (f == NULL) {
-            FM_DEBUG_ERROR(TAG, "Failed to open program.bin");
-            return;
-        }
-
-        std::uint8_t buf [256];
-        size_t ofs = num * BYTES_PER_SAVE_PARAM;
-        fseek(f,ofs,SEEK_SET);
-        fread(buf,1,BYTES_PER_SAVE_PARAM,f);
-        memcpy(&(timbre_memory_[num]),buf,BYTES_PER_SAVE_PARAM);
-        FM_DEBUG_INFO(TAG,"Load done!");
-        fclose(f);
-    }
-
-    void timbre_manager::modify_timbre(save_param_t *dst,std::uint16_t num,std::uint8_t value){
-        //Currently we only use NRPN #0-#127
-        if(num < (sizeof(nrpn_to_save_param_offset)/sizeof(*nrpn_to_save_param_offset))){
-            int ofs = nrpn_to_save_param_offset[num];
-            if(ofs > -1){
-                (*dst)[ofs] = value;
-            }
-        }
-    }
-
-    void timbre_manager::get_timbre(std::uint16_t num,save_param_t* dst){
-        if(num >= MAX_TIMBRE_PROGRAMS)num = MAX_TIMBRE_PROGRAMS - 1;
-        memcpy(dst,timbre_memory_[num],sizeof(*timbre_memory_));
-    }
-
-    void timbre_manager::parse_timbre(save_param_t* src,synth_param_t* dst){
-        //Program Name
-        memcpy(&(dst->program_name),(void*)src,BYTES_OF_PROGRAM_NAME);
-        dst->program_name[16] = '\0';//Terminate Program name
-        //NRPN parameters
-        for(int i = 0;i < SAVE_PARAM_NUM - 1;i++){
-            parse_NRPN(dst,save_param_offset_to_nrpn[i + 1],(*src)[BYTES_OF_PROGRAM_NAME+i]);
-        }
-    }
-
 }

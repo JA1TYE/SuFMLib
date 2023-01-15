@@ -11,7 +11,6 @@
 //Otherwise, this library calculate last stage gain automatically.
 //#define STATIC_GAIN 0x8000
 
-#define SYNTH_FSAMPLE 47999.992f
 #define SYNTH_EG_FREQ 1000
 #define NUM_OPERATOR 4 
 #define MAX_TONES 6

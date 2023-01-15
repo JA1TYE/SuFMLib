@@ -1,9 +1,10 @@
 #ifndef _EG_H_
 #define _EG_H_
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
+
 #include "synth_param.h"
-namespace su_synth{
+namespace su_synth::fm{
     typedef enum{
         EG_WAIT,
         EG_FORCE_DUMP,

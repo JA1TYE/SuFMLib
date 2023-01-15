@@ -1,11 +1,12 @@
 #ifndef _OP_H_
 #define _OP_H_
 #include <cstdint>
+
 #include "osc.h"
 #include "eg.h"
 #include "synth_param.h"
 
-namespace su_synth{
+namespace su_synth::fm{
     class fm_operator{
         private:
             op_param_t* param_;
