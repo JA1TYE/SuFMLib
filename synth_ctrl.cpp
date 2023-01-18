@@ -11,10 +11,33 @@
 namespace su_synth::fm{
     const std::uint8_t ASSIGN_INVALID = 0xff;
     std::uint32_t synth_controller::decimation_rate = 48;
-    double synth_controller::sampling_freq = 48000;
+    double synth_controller::sampling_rate = 48000;
 
-    synth_controller::synth_controller(timbre_manager *tm){
+    synth_controller::synth_controller(){
+
+    }
+
+    synth_controller::~synth_controller(){
+        delete[] tg_;
+        delete[] assign_info_;
+        delete[] lru_;
+    }
+
+    void synth_controller::init(timbre_manager *tm,double fsample,std::int16_t num_tones){
         tm_ = tm;
+        NUM_TONES_ = num_tones;
+        
+        //if fsample > 0, preapre delta table
+        prepare_delta_table(fsample);
+
+        //Instantiate Tone Generator Class
+        tg_ = new fm_tone[num_tones];
+        assign_info_ = new assign_info_t[num_tones];
+        lru_ = new std::uint8_t[num_tones];
+
+#ifndef STATIC_GAIN
+        OUT_SCALE = calc_out_scale(NUM_TONES_);//TODO replace with value that is calculated from MAX_TONES
+#endif
         printf("DECIMATION_RATE = %lu,OUT_SCALE = 0x%lx\n",decimation_rate,OUT_SCALE);
         for(int i = 0;i < MAX_CHANNELS;i++){
             tm_->get_timbre(0,&ch_save_param_[i]);
@@ -29,13 +52,35 @@ namespace su_synth::fm{
             control_value[i].foot = 0;
         }
 
-        for(int i = 0;i < MAX_TONES;i++){
+        for(int i = 0;i < NUM_TONES_;i++){
             assign_info_[i].note = ASSIGN_INVALID;
             assign_info_[i].ch = 0;
             lru_[i] = 0;
             tg_[i].set_param(&ch_param_[0]);
             tg_[i].set_control(&control_value[0]);
         }
+    }
+
+    std::uint8_t synth_controller::count_bit_width(std::uint32_t in){
+        if(in == 0)return 1;
+        std::uint8_t width = 0;
+        while(in != 0){
+            width++;
+            in = in >> 1;
+        }
+        return width;
+    }
+
+    std::uint32_t synth_controller::calc_out_scale(std::uint32_t in){
+        if(in == 0) return 0;
+        std::uint8_t shift_amount = count_bit_width(in - 1);
+
+        std::uint32_t ret = 0;
+        if(shift_amount < 32){
+            ret = 1 << (16 - shift_amount);
+        }
+        
+        return ret;
     }
 
     //Calculate DDS delta value
@@ -57,7 +102,7 @@ namespace su_synth::fm{
             delta_table[idx] = delta;
         }
  #endif               
-        sampling_freq = fsample;
+        sampling_rate = fsample;
         decimation_rate = (int)((double)fsample / (double)SYNTH_EG_FREQ + 0.5);
     }
 
@@ -130,8 +175,8 @@ namespace su_synth::fm{
             tmp = tmp & 0x3fff;
             tmp = tmp | (((std::uint32_t)value << 14) & 0xc000);
         }
-        if(tmp > MAX_TIMBRE_PROGRAMS){
-            tmp = tmp % MAX_TIMBRE_PROGRAMS;
+        if(tmp > tm_->get_timbre_memory_size()){
+            tmp = tmp % tm_->get_timbre_memory_size();
         }
         control_value[ch].timbre_number = tmp;
 
@@ -139,7 +184,7 @@ namespace su_synth::fm{
         if(type == PROGRAM_CHANGE){
             tm_->get_timbre(tmp,&ch_save_param_[ch]);
             tm_->parse_timbre(&ch_save_param_[ch],&ch_param_[ch]);
-            for(int i = 0;i < MAX_TONES;i++){
+            for(int i = 0;i < NUM_TONES_;i++){
                 if(assign_info_[i].ch == ch){
                     tg_[i].set_param(&ch_param_[ch]);
                 }
@@ -149,7 +194,7 @@ namespace su_synth::fm{
 
     void synth_controller::set_pitchbend(std::int16_t value,std::uint8_t ch){
         control_value[ch].pitchbend = value;
-        for(int i = 0;i < MAX_TONES;i++){
+        for(int i = 0;i < NUM_TONES_;i++){
             if(assign_info_[i].ch == ch){
                 tg_[i].set_pitchbend(value);
             }
@@ -233,11 +278,11 @@ namespace su_synth::fm{
         int available_tone_idx = -1;
 
         //Update tone status
-        for(i = 0;i < MAX_TONES;i++){
+        for(i = 0;i < NUM_TONES_;i++){
             if(is_wait(tg_[i]) == true){
                 assign_info_[i].note = ASSIGN_INVALID;
                 if(lru_[i] > 0){
-                    for(int n = 0;n < MAX_TONES;n++){
+                    for(int n = 0;n < NUM_TONES_;n++){
                         if(lru_[n] > lru_[i]){
                             lru_[n]--;
                         }
@@ -247,7 +292,7 @@ namespace su_synth::fm{
             }
         }
 
-        for(i = 0;i < MAX_TONES;i++){
+        for(i = 0;i < NUM_TONES_;i++){
             //Checking the same tone
             if(note == assign_info_[i].note && ch == assign_info_[i].ch){
                 same_tone_idx = i;
@@ -269,7 +314,7 @@ namespace su_synth::fm{
     int synth_controller::search_tg(std::uint8_t note,std::uint8_t ch){
         int i;
         //Checking the same tone
-        for(i = 0;i < MAX_TONES;i++){
+        for(i = 0;i < NUM_TONES_;i++){
             if(note == assign_info_[i].note && ch == assign_info_[i].ch){
                 return i;
             }
@@ -288,7 +333,7 @@ namespace su_synth::fm{
         //If the same tone is already assigned:
         if(note == assign_info_[tg_idx].note && ch == assign_info_[tg_idx].ch){
             int lru_tmp = lru_[tg_idx];
-            for(int i = 0;i < MAX_TONES;i++){
+            for(int i = 0;i < NUM_TONES_;i++){
                 if(i != tg_idx && assign_info_[i].note != ASSIGN_INVALID){
                     if(lru_tmp > lru_[i]){
                         lru_[i]++;
@@ -298,7 +343,7 @@ namespace su_synth::fm{
         }
         //Use wait-state or LRU-selected tone:
         else{
-            for(int i = 0;i < MAX_TONES;i++){
+            for(int i = 0;i < NUM_TONES_;i++){
                 if(i != tg_idx && assign_info_[i].note != ASSIGN_INVALID){
                     lru_[i]++;
                 }
@@ -323,7 +368,7 @@ namespace su_synth::fm{
         std::int32_t sum_right = 0;
         std::int32_t tmp;
         //Process sample calculation
-        for(int i = 0;i < MAX_TONES;i++){
+        for(int i = 0;i < NUM_TONES_;i++){
             std::uint8_t ch;
             ch = assign_info_[i].ch;
             tmp = tg_[i].calc();
@@ -332,7 +377,7 @@ namespace su_synth::fm{
             sum_left += (tmp * control_value[ch].panning_left) / 0x8000;
             sum_right += (tmp * control_value[ch].panning_right) / 0x8000;
         }
-        sum_left = sum_left * OUT_SCALE;//OUT_SCALE is defined in synth_param.h
+        sum_left = sum_left * OUT_SCALE;//OUT_SCALE is defined in synth_config.h or automatically calculated by constructor
         sum_right = sum_right * OUT_SCALE;
         buf[0] = sum_left;
         buf[1] = sum_right;

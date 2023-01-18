@@ -109,14 +109,16 @@ namespace su_synth::fm{
     class timbre_manager{
         private:
             save_param_t* timbre_memory_;
+            std::uint16_t NUM_TIMBRE_PROGRAMS_;
         public:
-            timbre_manager();
+            timbre_manager(std::uint16_t num_timbres_);
             ~timbre_manager();
             void get_timbre(std::uint16_t num,save_param_t* dst);
             void parse_timbre(save_param_t* src,synth_param_t* dst);
             void modify_timbre(save_param_t *dst,std::uint16_t num,std::uint8_t value);
             void export_timbre(std::uint16_t num,save_param_t *dst);
             void import_timbre(std::uint16_t num,save_param_t *src);
+            std::uint16_t get_timbre_memory_size(void);
             static void parse_RPN(synth_param_t* target,std::uint16_t num,std::uint8_t value);
             static void parse_NRPN(synth_param_t* target,std::uint16_t num,std::uint8_t value);
             //Debug function

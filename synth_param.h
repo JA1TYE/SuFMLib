@@ -109,33 +109,5 @@ namespace su_synth::fm{
     const size_t       BYTES_OF_PROGRAM_NAME = 16;
 
     typedef std::uint8_t save_param_t[BYTES_PER_SAVE_PARAM];
-
-    constexpr std::uint8_t count_bit_width(std::uint32_t in){
-        if(in == 0)return 1;
-        std::uint8_t width = 0;
-        while(in != 0){
-            width++;
-            in = in >> 1;
-        }
-        return width;
-    }
-
-    constexpr std::uint32_t calc_out_scale(std::uint32_t in){
-        if(in == 0) return 0;
-        std::uint8_t shift_amount = count_bit_width(in - 1);
-
-        std::uint32_t ret = 0;
-        if(shift_amount < 32){
-            ret = 1 << (16 - shift_amount);
-        }
-        
-        return ret;
-    }
-
-#ifndef STATIC_GAIN
-    constexpr std::uint32_t OUT_SCALE = calc_out_scale(MAX_TONES);//TODO replace with value that is calculated from MAX_TONES
-#else
-    constexpr std::uint32_t OUT_SCALE = STATIC_GAIN;
-#endif
 }
 #endif

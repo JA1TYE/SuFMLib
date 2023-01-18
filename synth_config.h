@@ -9,12 +9,10 @@
 //If you want to use specific gain value,
 //Please define STATIC_GAIN and set the gain to STATIC_GAIN.
 //Otherwise, this library calculate last stage gain automatically.
-//#define STATIC_GAIN 0x8000
+//#define STATIC_GAIN 0x2000
 
 #define SYNTH_EG_FREQ 1000
 #define NUM_OPERATOR 4 
-#define MAX_TONES 6
 #define MAX_CHANNELS 16
-#define MAX_TIMBRE_PROGRAMS 256
 
 #endif

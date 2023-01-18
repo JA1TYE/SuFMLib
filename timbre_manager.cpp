@@ -11,22 +11,21 @@
 namespace su_synth::fm{
 
     //Constructor
-    timbre_manager::timbre_manager(){
-        timbre_memory_ = (save_param_t*)malloc(sizeof(save_param_t) * MAX_TIMBRE_PROGRAMS);
+    timbre_manager::timbre_manager(std::uint16_t num_timbres){
+        NUM_TIMBRE_PROGRAMS_ = num_timbres;
+        timbre_memory_ = new save_param_t[NUM_TIMBRE_PROGRAMS_];
         if(timbre_memory_ == NULL)printf("err on timbre manager\n");
     }
 
     //Destructor
     timbre_manager::~timbre_manager(){
-        if(timbre_memory_ != NULL){
-            free(timbre_memory_);
-        }
+        delete[] timbre_memory_;
     }
 
     //Export timbre parameter from timbre_manager
     //export_timbre is get_timbre with boundary check
     void timbre_manager::export_timbre(std::uint16_t num,save_param_t *dst){
-        if(num >= MAX_TIMBRE_PROGRAMS){
+        if(num >= NUM_TIMBRE_PROGRAMS_){
             return;
         }
         get_timbre(num,dst);
@@ -34,7 +33,7 @@ namespace su_synth::fm{
 
     //Import timbre parameter to timbre_manager 
     void timbre_manager::import_timbre(std::uint16_t num,save_param_t *src){
-        if(num >= MAX_TIMBRE_PROGRAMS){
+        if(num >= NUM_TIMBRE_PROGRAMS_){
             return;
         }
         memcpy(&(timbre_memory_[num]),src,sizeof(save_param_t));
@@ -51,7 +50,7 @@ namespace su_synth::fm{
     }
 
     void timbre_manager::get_timbre(std::uint16_t num,save_param_t* dst){
-        if(num >= MAX_TIMBRE_PROGRAMS)num = MAX_TIMBRE_PROGRAMS - 1;
+        if(num >= NUM_TIMBRE_PROGRAMS_)num = NUM_TIMBRE_PROGRAMS_ - 1;
         memcpy(dst,timbre_memory_[num],sizeof(*timbre_memory_));
     }
 
@@ -63,6 +62,10 @@ namespace su_synth::fm{
         for(int i = 0;i < SAVE_PARAM_NUM - 1;i++){
             parse_NRPN(dst,save_param_offset_to_nrpn[i + 1],(*src)[BYTES_OF_PROGRAM_NAME+i]);
         }
+    }
+
+    std::uint16_t timbre_manager::get_timbre_memory_size(void){
+        return NUM_TIMBRE_PROGRAMS_;
     }
 
     /*--- Static member functions ---*/
