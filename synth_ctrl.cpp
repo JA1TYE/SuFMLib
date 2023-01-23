@@ -362,6 +362,10 @@ namespace su_synth::fm{
             tg_[tg_idx].trigger_off();
         }
     }
+
+    char* synth_controller::get_current_program_name(std::uint8_t ch){
+        return ch_param_[ch].program_name;
+    }
     
     void synth_controller::calc(std::int32_t* buf){
         std::int32_t sum_left = 0;

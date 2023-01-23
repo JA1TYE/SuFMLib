@@ -80,6 +80,7 @@ namespace su_synth::fm{
             void reset_parameter_number(uint8_t ch);
             void calc_modulation_total(std::uint8_t ch);
             std::uint16_t lookup_velocity(std::uint8_t velocity);
+            char* get_current_program_name(std::uint8_t ch);
             void calc(std::int32_t* buf);
     };
 }
