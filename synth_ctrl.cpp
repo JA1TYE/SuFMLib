@@ -50,6 +50,7 @@ namespace su_synth::fm{
             control_value[i].modulation_wheel = 0;
             control_value[i].breath = 0;
             control_value[i].foot = 0;
+            control_value[i].hold = false;
         }
 
         for(int i = 0;i < NUM_TONES_;i++){
